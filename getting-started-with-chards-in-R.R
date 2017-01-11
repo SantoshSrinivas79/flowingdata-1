@@ -22,8 +22,6 @@ ed_dp <- education
 ed_dp.high <- ed_dp %>% arrange(high)
 
 expect_true(all.equal(education.high, ed_dp.high, check.attributes = FALSE))
-## row names are not ordered with the rows
-expect_equal(row.names(education.high), as.character(seq(from = 51, to = 1, by = -1)))
 
 glimpse(education)
 ############################
@@ -39,6 +37,7 @@ plot(education[,])
 library(ggplot2)
 
 ggplot(education, aes(x = high, y = bs)) + geom_point()
+ggplot(education) + geom_point(aes(x = high, y = bs), size = 3)
 
 library(GGally)
 ggpairs(education[,2:4])
@@ -57,6 +56,8 @@ plot(education.high$high,
      main = "Plot title")
 
 barplot(education$high)
+barplot(education$high, names.arg = education$state, horiz = TRUE, las = 1,
+        cex.names = 0.5, border = NA)
 
 boxplot(education$high)
 boxplot(education[, 2:4])
@@ -68,9 +69,16 @@ gp + geom_line() + ylim(c(0, 100))
 gp + geom_point()
 gp + geom_col(width = 0.1)
 gp + coord_cartesian(ylim = c(75, 100)) + geom_col(width = 0.1) 
+gp + geom_col(width = 0.1) + ylim(c(75, 100))   ## empty plot
+
 
 gp + geom_col()  # corresponds to barplot
 gp + geom_col() + coord_flip()
+gp + geom_col() +
+  geom_text(aes(y = 1.5, hjust = 0), label = education$state, size = 2.5, color = "white", ) +
+  coord_flip()
+gp <- ggplot(education.high, aes(as.character(1:nrow(education)), high))
+gp + geom_col() + scale_x_discrete(breaks=as.character(1:nrow(education)), labels = education$state) + coord_flip()
 
 ggplot(education.high, aes("x", high)) + geom_boxplot()
 ggplot(education.high, aes("x", high)) + geom_boxplot()
