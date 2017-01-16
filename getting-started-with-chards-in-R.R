@@ -75,10 +75,22 @@ gp + geom_col(width = 0.1) + ylim(c(75, 100))   ## empty plot
 gp + geom_col()  # corresponds to barplot
 gp + geom_col() + coord_flip()
 gp + geom_col() +
-  geom_text(aes(y = 1.5, hjust = 0), label = education$state, size = 2.5, color = "white", ) +
+  geom_text(aes(y = 1.5, hjust = 0), label = education$state, size = 2.5, color = "white") +
   coord_flip()
-gp <- ggplot(education.high, aes(as.character(1:nrow(education)), high))
-gp + geom_col() + scale_x_discrete(breaks=as.character(1:nrow(education)), labels = education$state) + coord_flip()
+
+ggplot(education.high, aes(1:nrow(education), high)) + geom_col() + coord_flip()
+
+ggplot(education.high, aes(state, high)) + geom_col() + coord_flip()
+
+education.high <- within(education.high, stateo <- factor(state, levels = rev(as.character(state)), ordered = TRUE))
+
+ggplot(education.high, aes(stateo, high)) + geom_col() + coord_flip()
+
+ggplot(education.high, aes(as.character(1:nrow(education)), high)) +
+  geom_col() +
+  scale_x_discrete(breaks=as.character(1:nrow(education)), labels = education$state) +
+  coord_flip()
+
 
 ggplot(education.high, aes("x", high)) + geom_boxplot()
 ggplot(education.high, aes("x", high)) + geom_boxplot()

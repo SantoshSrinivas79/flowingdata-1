@@ -13,7 +13,7 @@ sapply(names(income), function(cn) anyDuplicated(income[[cn]]))
 sapply(income, function(col) length(unique(col))/length(col))
 
 income_dt <- as.data.table(income)
-income_dt[,length(unique())]
+income_dt[,.(length(unique(id)), length(unique(med_income_moe)))]
 
 plot(income[,4:ncol(income)])
 
@@ -117,12 +117,16 @@ library(tidyr)
 
 income0813[1:3,] %>% gather(med_year, med_val, med2008, med2013) %>% separate(med_year, c("ignore", "year"), sep = 3)
 
-inc2 <- income0813[1:10,] %>% gather(med_year, med_val, med2008, med2013) %>%
+inc2 <- income0813[1:3,] %>% gather(med_year, med_val, med2008, med2013) %>%
   extract(med_year, "year", regex = "([:digit:]+)", remove = FALSE)
 
 ggplot(inc2, aes(year, med_val)) +
   geom_col(position = "dodge") + facet_grid(name ~ .) +
   coord_flip() +
+  theme(strip.text.y = element_text(angle = 0))
+
+ggplot(inc2, aes(year, med_val, fill = year)) +
+  geom_col(position = "dodge") + facet_grid(~ name) +
   theme(strip.text.y = element_text(angle = 0))
 
 
@@ -133,7 +137,7 @@ ggplot(inc2, aes(year, med_val)) +
 regions <- read.csv("downloads/data/state_geocodes_v2011.csv",
                     stringsAsFactors=FALSE,
                     colClasses=c("Region"="character", "Division"="character",
-                                 s"FIPS"="character", "Name"="character"))
+                                 "FIPS"="character", "Name"="character"))
 income_more <- merge(income, regions, by="FIPS")
 unique_regions <- unique(income_more$Region)
 
@@ -160,3 +164,17 @@ barplot(rev(bar_heights), names.arg=rev(bar_names), las=2, horiz=TRUE, cex.names
 barplot(c(3,4,NA,3,4), horiz = TRUE, names.arg = c(1,2,3,4,5), las = 1)
 barplot(c(3,4,NA,NA,4), horiz = TRUE, names.arg = c(1,2,3,4,5), las = 1)
 barplot(c(3,4,NA,NA,4), horiz = TRUE, names.arg = c(1,2,"CAT_NAME",NA,5), las = 1)
+
+income_b <- merge(income_more,
+                  regions %>%
+                    filter(Division == 0) %>%
+                    rename(RegionName = Name) %>%
+                    select(Region, RegionName),
+                  by = "Region") %>%
+  mutate(nameo = factor(name, levels = name[order(med_income)]))
+
+ggplot(income_b, aes(x = nameo, y = med_income)) +
+  facet_grid(RegionName~., scales = "free_y") +
+  geom_col() +
+  ggplot2::coord_flip() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
